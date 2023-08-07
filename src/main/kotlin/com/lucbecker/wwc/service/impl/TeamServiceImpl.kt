@@ -5,6 +5,8 @@ import com.lucbecker.wwc.domain.repository.TeamRepository
 import com.lucbecker.wwc.service.TeamService
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.data.domain.Sort
+import org.springframework.data.domain.Sort.Direction
 
 
 @Service
@@ -12,7 +14,7 @@ class TeamServiceImpl(private val teamRepository: TeamRepository) : TeamService 
 
     @Transactional(readOnly = true)
     override fun findAll(): List<Team> {
-        return teamRepository.findAll()
+        return teamRepository.findAll(Sort.by(Direction.DESC, "score"))
     }
 
     @Transactional(readOnly = true)
