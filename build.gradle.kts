@@ -40,7 +40,7 @@ tasks.withType<KotlinCompile> {
 
 tasks.getByName<Jar>("bootJar") {
 	manifest {
-		attributes["Main-Class"] = "com.lucbecker.Application"
+		attributes["Main-Class"] = "com.lucbecker.wwc.Application"
 	}
 }
 
