@@ -14,37 +14,33 @@ class SimulateServiceImpl(
     private val teamService: TeamService,
     private val chatGptService: ChatGptService,
     @Value("\${openai.api-key}")
-    private val openAiApiKey: String
+    private val openAiApiKey: String,
 ) : SimulateService {
 
-    val womenWorldCupTeams = teamService.findAll()
+    val womenWorldCup2023Teams = teamService.findAll()
     override fun simulate(team1Id: String, team2Id: String): Team {
         val team1 = teamService.findById(team1Id)
         val team2 = teamService.findById(team2Id)
 
-        val trainingData = womenWorldCupTeams.joinToString("\n") { "${it.id} (${it.score})" }
+        val trainingData = womenWorldCup2023Teams.joinToString("\n") { "${it.id} (${it.score})" }
 
-        val messages = listOf(
+        val authorization = "Bearer $openAiApiKey"
+        val request = ChatCompletionRequest("gpt-3.5-turbo", messages = listOf(
             Message(
                 "system",
                 """
-                    Você é um modelo de análise estatística com foco em simulação de partidas de futebol feminino.
-                    Nesse contexto, considere o seguinte ranking da FIFA para entender a força de cada seleção:
+                    Atue como um modelo de análise estatística para simulação de partidas de futebol feminino.
+                    Considere os seguintes dados de treinamento, no formato {SIGLA_SELECAO} ({PONTOS_RANKING_FIFA}):
                     $trainingData
-                """
-            ),
+                """.trimIndent()),
             Message(
                 "user",
-                "Simule a partida entre ${team1.id} e ${team2.id}. Me retorne apenas a seleção vencedora, não divague."
-            )
-        )
+                "Simple a partida entre ${team1.id} vs ${team2.id}. Me envie como resposta apenas a sigla da seleção vencedora, não divague!")
 
-        val authorization = "Bearer $openAiApiKey"
-        val request = ChatCompletionRequest("gpt-3.5-turbo", messages)
-
+        ))
         val response = chatGptService.createChatCompletion(authorization, request)
 
-        return if (team1.id == response.choices.first().message.content) team1 else team2
+        return if (response.choices.first().message.content == team1.id) team1 else team2
     }
 
 }
